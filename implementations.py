@@ -124,8 +124,9 @@ def least_squares_SGD(y, tx, initial_w, batch_size,  max_iters, gamma):
     return w, loss
 
 def least_squares(y, tx):
-
-    return w, loss
+    w=np.linalg.inv(np.transpose(tx).dot(tx)).dot(np.transpose(tx)).dot(y)
+    mse=compute_loss(y,tx,w)
+    return mse, w
 
 def ridge_regression(y, tx, lambda_ ):
 
