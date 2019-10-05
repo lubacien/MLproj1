@@ -2,7 +2,7 @@ import numpy as np
 
 def load_data(sub_sample=True, add_outlier=False):
 
-    path_dataset = "train.csv"
+    path_dataset = "../data/train.csv"
     features = np.genfromtxt(
         path_dataset, delimiter=",", skip_header=1, usecols=range(2,32,1))
 
@@ -128,9 +128,13 @@ def least_squares(y, tx):
     mse=compute_loss(y,tx,w)
     return mse, w
 
-def ridge_regression(y, tx, lambda_ ):
+def ridge_regression(y, x, lambda_ ):
+        """implement ridge regression."""
 
-    return w, loss
+    w = np.linalg.inv(np.transpose(x).dot(x) + lambda_ / (2 * len(y)) * np.eye(x.shape[1], x.shape[1])).dot(
+        np.transpose(x)).dot(y)
+    mse = compute_loss(y, x, w)
+    return w, mse
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
 

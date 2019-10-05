@@ -12,4 +12,6 @@ w_init=np.random.rand(np.shape(features)[1])
 
 #least_squares_GD(y,features,w_init,50,0.1)
 
-least_squares_SGD(y, features, w_init, 1, 50, 0.1)
+#least_squares_SGD(y, features, w_init, 100, 50, 0.1)
+
+print(least_squares(y,features))
