@@ -148,12 +148,12 @@ def reg_logistic_regression(y, tx, lambda_ , initial_w, max_iters, gamma):
 
 #############################################################################
 
-def find_g(y,tX, w_ini, iters, inter):
+def find_g(y,tX, w_ini, inter):
     losses = []
     gammas = []
     ran = inter[0]-inter[1]
     for g in np.linspace(inter[0],inter[1], 100):
-        weight, loss = least_squares_GD(y,tX,w_ini, 2,g)
+        weight, loss = least_squares_GD(y,tX,w_ini, 5,g)
         losses.append(loss)
         gammas.append(g)
     #ran = ran/10
@@ -162,4 +162,43 @@ def find_g(y,tX, w_ini, iters, inter):
         #print(inter)
     ind = losses.index(min(losses))
     gamma = gammas[ind]
+    print("\n")
     return gamma
+
+###################### FEATURE FIX ###########################################
+def replace_aberrant_values(tX):
+    '''Replaces the aberrant value (-999) for a given feature 
+    and  replaces it by the mean observed value of that feature.'''
+    tX_repl_feat = np.copy(tX)
+    means = []
+    
+    #compute the mean of each feature (column) without taking -999 values into account
+    for j in range(tX_repl_feat.shape[1]):
+        m = tX_repl_feat[:,j][tX_repl_feat[:,j] != -999].mean()
+        means.append(m)
+    
+    #change all -999 values of a column by the mean computed previously
+    for i in range(len(means)):
+        mask = tX_repl_feat[:, i] == -999
+        tX_repl_feat[:, i][mask] = means[i]
+    
+    return tX_repl_feat
+
+
+
+
+def delete_aberrant_features(tX, tX_test, frac):
+    if (frac < 0) or (frac > 1):
+        print('Fraction is not correct.')
+        return tX
+    
+    tX_del_feat = np.copy(tX)
+    feat_to_delete = []
+    
+    for i in range(tX_del_feat.shape[1]):
+        if (np.count_nonzero(tX_del_feat[:,i] == -999)/tX_del_feat.shape[0]) > frac:
+            feat_to_delete.append(i)
+    
+    tX_del_feat = np.delete(tX_del_feat, feat_to_delete, 1)
+    tX_del_test = np.delete(tX_test, feat_to_delete, 1)
+    return tX_del_feat, tX_del_test
