@@ -30,6 +30,21 @@ def build_model_data(y,tx):
     tx = np.c_[np.ones(num_samples), tx]
     return y, tx
 
+def build_poly(x, degree):
+    """polynomial basis functions for input data x, for j=0 up to j=degree."""
+    # ***************************************************
+    # INSERT YOUR CODE HERE
+    # polynomial basis function: TODO
+    # this function should return the matrix formed
+    # by applying the polynomial basis to the input data
+    # ***************************************************
+    phi=[]
+    for j in range(degree+1):
+        phi.append(x**j)
+    phi=np.reshape(phi,(x.shape[0],-1))
+    
+    return phi
+
 """Costs"""
 
 def compute_loss_log(y, tx, w):
@@ -146,15 +161,15 @@ def least_squares_SGD(y, tx, initial_w, batch_size,  max_iters, gamma):
 def least_squares(y, tx):
     w=np.linalg.inv(np.transpose(tx).dot(tx)).dot(np.transpose(tx)).dot(y)
     mse=compute_loss(y,tx,w)
-    return mse, w
+    return w,mse
 
 def ridge_regression(y, x, lambda_ ):
     """implement ridge regression."""
 
     w = np.linalg.inv(np.transpose(x).dot(x) + lambda_ *(2 * len(y)) * np.eye(x.shape[1], x.shape[1])).dot(np.transpose(x)).dot(y)
-    mse = compute_loss(y, x, w)
+    loss = compute_loss(y, x, w)+ lambda_*np.linalg.norm(w)**2
 
-    return w, mse
+    return w, loss
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """Logistic regression using gradient descent or SGD"""
