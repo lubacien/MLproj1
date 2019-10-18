@@ -75,6 +75,39 @@ def compute_loss(y, tx, w):
 
 """Implementations"""
 
+def least_squares_GD_opt(y, tx, initial_w, max_iters, gamma):
+
+    """Gradient descent algorithm."""
+    # Define parameters to store w and loss
+    ws = [initial_w]
+    losses = [1]
+    w = initial_w
+    for n_iter in range(max_iters):
+        # computes gradient and loss
+
+        grad = compute_gradient(y, tx, w)
+        loss = compute_loss(y, tx, w)
+        
+        if loss > losses[n_iter]:
+            gamma=find_g(y,tx, w,[gamma-1e-1*gamma,gamma])
+            print("gamma is too high, new gamma = {g}".format(g=gamma))
+        elif loss > losses[n_iter]*0.999999:
+            gamma=find_g(y,tx, w,[gamma,gamma+1e-1*gamma])
+            print("gamma is too low, new gamma = {g}".format(g=gamma))
+        #updates w
+
+        w = w - gamma * grad
+
+        # store w and loss
+
+        ws.append(w)
+        losses.append(loss)
+        print("Gradient Descent({bi}/{ti}): loss={l}".format(
+                bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]), end="\r")
+        
+
+    return w, loss #we return only the last loss and w
+
 def least_squares_GD(y, tx, initial_w, max_iters, gamma):
 
     """Gradient descent algorithm."""
@@ -83,11 +116,11 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     losses = []
     w = initial_w
     for n_iter in range(max_iters):
-        print("niter",n_iter)
         # computes gradient and loss
 
         grad = compute_gradient(y, tx, w)
         loss = compute_loss(y, tx, w)
+        
 
         #updates w
 
@@ -99,8 +132,9 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
         losses.append(loss)
         print("Gradient Descent({bi}/{ti}): loss={l}".format(
                 bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]), end="\r")
+        
 
-    return w, loss #we return only the last loss and w
+    return w, loss
 
 def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
     """
@@ -229,8 +263,8 @@ def find_g(y,tX, w_ini, inter):
     losses = []
     gammas = []
     ran = inter[0]-inter[1]
-    for g in np.linspace(inter[0],inter[1], 100):
-        weight, loss = least_squares_GD(y,tX,w_ini, 5,g)
+    for g in np.linspace(inter[0],inter[1], 10):
+        weight, loss = least_squares_GD(y,tX,w_ini, 2,g)
         losses.append(loss)
         gammas.append(g)
     #ran = ran/10
