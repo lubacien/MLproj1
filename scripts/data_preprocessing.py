@@ -1,5 +1,5 @@
 import numpy as np
-
+from proj1_helpers import *
     
 def jet(x):
     """
@@ -20,25 +20,59 @@ def trim_data(tX):
     tX = tX[:, ~(tX == tX[0,:]).all(0)]
     return tX
 
-def jet_split(x, y):
+def create_inds(jet_set, boolval):
+    inds0 = [i for i, x in enumerate(jet_set[0]) if x == boolval]
+    inds1 = [i for i, x in enumerate(jet_set[1]) if x == boolval]
+    inds2 = [i for i, x in enumerate(jet_set[2]) if x == boolval]
+    
+    return [inds0, inds1, inds2]
+
+def jet_split(x, inds):
     """ Returns the splitted data sets and their previsions according to the jet number as well as the index of the data points from each set"""
-    jet_set = jet(x)
+    
     
     # Creates 3 sets of indices each corresponding to the data points belonging to the jet number
-    inds0 = [i for i, x in enumerate(jet_set[0]) if x == False]
-    inds1 = [i for i, x in enumerate(jet_set[1]) if x == False]
-    inds2 = [i for i, x in enumerate(jet_set[2]) if x == False]
     
-    tX_jet0 = np.delete(x, inds0, axis = 0)
-    y_jet0 = np.delete(y, inds0, axis = 0)
     
-    tX_jet1 = np.delete(x, inds1, axis = 0)
-    y_jet1 = np.delete(y, inds1, axis = 0)
     
-    tX_jet2 = np.delete(x, inds2, axis = 0)
-    y_jet2 = np.delete(y, inds2, axis = 0)
+    tX_jet0 = np.delete(x, inds[0], axis = 0)
     
-    return [trim_data(tX_jet0), trim_data(tX_jet1), trim_data(tX_jet2)], [ y_jet0, y_jet1, y_jet2], [inds0, inds1, inds2]
+    
+    tX_jet1 = np.delete(x, inds[1], axis = 0)
+    
+    tX_jet2 = np.delete(x, inds[2], axis = 0)
+    
+    return [trim_data(tX_jet0), trim_data(tX_jet1), trim_data(tX_jet2)]
 
 
+def split_y(y, inds):
+    y_jet0 = np.delete(y, inds[0], axis = 0)
+    y_jet1 = np.delete(y, inds[1], axis = 0)
+    y_jet2 = np.delete(y, inds[2], axis = 0)
+    
+    return [y_jet0, y_jet1, y_jet2]
 
+def predict_merge(tX_test, weights_):
+    """ Takes as input the test dataset, splits it according to the jet number, predicts the y for each data set according to the corresponding model, and remerges the predicted data according to the test dataset"""
+    
+    test_jets =(jet(tX_test)) 
+    inds_false = create_inds(test_jets, False) #creates the indexes to remove from the data set to form sets
+                                               #according to jet number
+    inds_true = create_inds(test_jets, True)   #creates the indexes of data points for each jet number, for 
+                                                #reconstruction purposes
+    test_sets = jet_split(tX_test, inds_false) #splits the test set into 3 different sets according to the 
+                                                #data points jet number
+    trues = np.concatenate(inds_true).ravel()   #indexes of each splitted data point
+    
+    y_preds = []
+    inds_ = []
+    #creates prediction according to each model and its corresponding data set
+    for test_set, weight, ind_true in zip(test_sets, weights_, inds_true): 
+        y_pred = predict_labels(weight, test_set)
+        y_preds.extend(y_pred)
+        inds_.extend(ind_true)
+        
+    y_preds = np.array(y_preds)
+    trues, y_preds = zip(*sorted(zip(trues,y_preds))) #sorts the prediction back to the correct order
+    
+    return y_preds
