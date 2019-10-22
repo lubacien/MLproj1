@@ -47,7 +47,7 @@ def split_y(y, inds):
     
     return [y_jet0, y_jet1, y_jet2]
 
-def predict_merge(tX_test, weights_,poly = False, degree = None):
+def predict_merge(tX_test, weights_,poly = False, degrees = None):
     """ Takes as input the test dataset, splits it according to the jet number, predicts the y for each data set according to the corresponding model, and remerges the predicted data according to the test dataset"""
     
     test_jets =(jet(tX_test)) 
@@ -57,8 +57,8 @@ def predict_merge(tX_test, weights_,poly = False, degree = None):
     
     if poly == True:
         poly_set = []                                 
-        for test_set in test_sets:
-            poly_set.append(build_poly(test_set, 3))
+        for test_set, degree in zip(test_sets,degrees):
+            poly_set.append(build_poly(test_set, degree))
             test_sets = poly_set
 
     trues = np.concatenate(inds_true).ravel()   #indexes of each splitted data point
