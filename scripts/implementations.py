@@ -67,7 +67,7 @@ def compute_gradient(y, tx, w):
     return (-1/(tx.shape[0]))*(np.transpose(tx).dot(y-tx.dot(w)))
 
 
-def compute_loss(y, tx, w):
+def compute_losscompute_loss(y, tx, w):
     """Calculate the loss (MSE)
     """
     e = y - tx.dot(w)
