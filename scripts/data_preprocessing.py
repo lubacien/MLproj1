@@ -65,12 +65,13 @@ def predict_merge(tX_test, weights_,poly = False, degree = None):
     
     y_preds = []
     inds_ = []
+
     #creates prediction according to each model and its corresponding data set
     for test_set, weight, ind_true in zip(test_sets, weights_, inds_true): 
         y_pred = predict_labels(weight, test_set)
         y_preds.extend(y_pred)
         inds_.extend(ind_true)
-        rmse_.append(math.sqrt(2*compute_mse(y_pred, test_set,weight)))
+        #rmse_.append(math.sqrt(2*compute_mse(y_pred, test_set,weight)))
         
     y_preds = np.array(y_preds)
     trues, y_preds = zip(*sorted(zip(trues,y_preds))) #sorts the prediction back to the correct order
