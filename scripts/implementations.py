@@ -67,7 +67,7 @@ def compute_gradient(y, tx, w):
     return (-1/(tx.shape[0]))*(np.transpose(tx).dot(y-tx.dot(w)))
 
 
-def compute_losscompute_loss(y, tx, w):
+def compute_loss(y, tx, w):
     """Calculate the loss (MSE)
     """
     e = y - tx.dot(w)
@@ -196,14 +196,23 @@ def least_squares(y, tx):
     w=np.linalg.inv(np.transpose(tx).dot(tx)).dot(np.transpose(tx)).dot(y)
     mse=compute_loss(y,tx,w)
     return w,mse
+"""
+def ridge_regression(y, tx, lambda_ ):
+    
 
-def ridge_regression(y, x, lambda_ ):
-    """implement ridge regression."""
-
-    w = np.linalg.inv(np.transpose(x).dot(x) + lambda_ *(2 * len(y)) * np.eye(x.shape[1], x.shape[1])).dot(np.transpose(x)).dot(y)
-    loss = compute_loss(y, x, w)+ lambda_*np.linalg.norm(w)**2
-
+    w = np.linalg.inv(np.transpose(tx).dot(tx) + lambda_ *(2 * len(y)) * np.eye(tx.shape[1], tx.shape[1])).dot(np.transpose(tx)).dot(y)
+    loss = compute_loss(y, tx, w)#+ lambda_*np.linalg.norm(w)**2
     return w, loss
+"""
+def ridge_regression(y, tx, lambda_):
+
+    aI = 2 * tx.shape[0] * lambda_ * np.identity(tx.shape[1])
+    a = tx.T.dot(tx) + aI
+    b = tx.T.dot(y)
+    w= np.linalg.solve(a, b)
+    loss = compute_loss(y, tx, w)+ lambda_*np.linalg.norm(w)**2
+
+    return w,loss
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """Logistic regression using gradient descent or SGD"""
