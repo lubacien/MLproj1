@@ -1,6 +1,8 @@
 import numpy as np
+import math
 from proj1_helpers import *
-    
+from implementations import *
+ 
 def jet(x):
     """
     Returns value corresponding to the 23 columns ( jet value
@@ -30,16 +32,9 @@ def create_inds(jet_set, boolval):
 def jet_split(x, inds):
     """ Returns the splitted data sets and their previsions according to the jet number as well as the index of the data points from each set"""
     
-    
     # Creates 3 sets of indices each corresponding to the data points belonging to the jet number
-    
-    
-    
     tX_jet0 = np.delete(x, inds[0], axis = 0)
-    
-    
     tX_jet1 = np.delete(x, inds[1], axis = 0)
-    
     tX_jet2 = np.delete(x, inds[2], axis = 0)
     
     return [trim_data(tX_jet0), trim_data(tX_jet1), trim_data(tX_jet2)]
@@ -52,16 +47,20 @@ def split_y(y, inds):
     
     return [y_jet0, y_jet1, y_jet2]
 
-def predict_merge(tX_test, weights_):
+def predict_merge(tX_test, weights_,poly = False, degree = None):
     """ Takes as input the test dataset, splits it according to the jet number, predicts the y for each data set according to the corresponding model, and remerges the predicted data according to the test dataset"""
     
     test_jets =(jet(tX_test)) 
-    inds_false = create_inds(test_jets, False) #creates the indexes to remove from the data set to form sets
-                                               #according to jet number
-    inds_true = create_inds(test_jets, True)   #creates the indexes of data points for each jet number, for 
-                                                #reconstruction purposes
-    test_sets = jet_split(tX_test, inds_false) #splits the test set into 3 different sets according to the 
-                                                #data points jet number
+    inds_false = create_inds(test_jets, False) #creates the indexes to remove from the data set to form sets according to jet number
+    inds_true = create_inds(test_jets, True)   #creates the indexes of data points for each jet number, for reconstruction purposes
+    test_sets = jet_split(tX_test, inds_false) #splits the test set into 3 different sets according to the
+    
+    if poly == True:
+        poly_set = []                                 
+        for test_set in test_sets:
+            poly_set.append(build_poly(test_set, 3))
+            test_sets = poly_set
+
     trues = np.concatenate(inds_true).ravel()   #indexes of each splitted data point
     
     y_preds = []
@@ -71,6 +70,7 @@ def predict_merge(tX_test, weights_):
         y_pred = predict_labels(weight, test_set)
         y_preds.extend(y_pred)
         inds_.extend(ind_true)
+        rmse_.append(math.sqrt(2*compute_mse(y_pred, test_set,weight)))
         
     y_preds = np.array(y_preds)
     trues, y_preds = zip(*sorted(zip(trues,y_preds))) #sorts the prediction back to the correct order
