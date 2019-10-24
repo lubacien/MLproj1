@@ -117,7 +117,7 @@ def cross_validation_for_ridgereg(tX, y, lambda_, degree):
     OUTPUT_PATH = '../data/submission_splitt.csv'
     create_csv_submission(ids_test, 1y_preds, OUTPUT_PATH)
     return 0
-
+        '''
 def cross_validation(y, tX, lambda_, degree, ratio):
     
     for i in range(int(1/(1-ratio))):
