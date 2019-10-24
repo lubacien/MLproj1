@@ -20,51 +20,35 @@ def split_data(x, y, ratio, seed=1):
     return xtrain, ytrain, xtest, ytest
 
 
-def cross_validation_for_leastsquares():
-    print('loading data'+"\n")
-    DATA_TEST_PATH = '../data/train.csv'
-    y,tX,ids = load_csv_data(DATA_TEST_PATH)
-    print('data loaded' + "\n")
-
-
+def cross_validation_for_leastsquares(y,tx,ratio):
     #we split the data for crossvalidation:
     ratio=0.8 #ratio of data used for training
     for i in range(int(1/(1-ratio))):
 
         xtrain, ytrain, xtest, ytest = split_data(tX, y, ratio, seed=1)
 
-        jet_set = jet(xtrain)
-        inds = create_inds(jet_set, False)
-        data_sets = jet_split(xtrain,inds)
-        y_sets = split_y(ytrain,inds)
-
-        jet_set_test = jet(xtest)
-        inds_test = create_inds(jet_set_test, False)
-        data_sets_test = jet_split(xtest, inds_test)
-        y_sets_test = split_y(ytest, inds_test)
-
-
         weights_ = []
         trainlosses = []
         testlosses = []
-        for data_set, y_set,data_set_test,y_set_test in zip(data_sets, y_sets,data_sets_test,y_sets_test):
-            w, loss = least_squares(y_set,data_set)
-            weights_.append(w)
-            trainlosses.append(loss)
-            testlosses.append(compute_loss(y_set_test,data_set_test,w))
+
+        w, loss = least_squares(y_set,data_set)
+        weights_.append(w)
+        trainlosses.append(loss)
+        testlosses.append(compute_loss(y_set_test,data_set_test,w))
 
 
     print("test error =",np.mean(testlosses))
     print("train error =", np.mean(trainlosses))
 
     #print('weights created: splitting and merging data' + "\n")
-
+    '''
     DATA_TEST_PATH = '../data/test.csv'
     _, tX_test, ids_test = load_csv_data(DATA_TEST_PATH)
     y_preds = predict_merge(tX_test,weights_)
     OUTPUT_PATH = '../data/submission_splitt.csv'
     create_csv_submission(ids_test, y_preds, OUTPUT_PATH)
-    return 0
+    '''
+    return np.mean(testlosses), np.mean(trainlosses)
 
 def cross_validation_for_ridgereg(tX, y, lambda_, degree):
 
@@ -117,8 +101,9 @@ def cross_validation_for_ridgereg(tX, y, lambda_, degree):
     OUTPUT_PATH = '../data/submission_splitt.csv'
     create_csv_submission(ids_test, 1y_preds, OUTPUT_PATH)
     return 0
-        '''
-def cross_validation(y, tX, lambda_, degree, ratio):
+    '''
+    
+def cross_validation_ridge(y, tX, lambda_, degree, ratio):
     
     for i in range(int(1/(1-ratio))):
 
@@ -136,9 +121,30 @@ def cross_validation(y, tX, lambda_, degree, ratio):
         weights_.append(w)
         trainlosses.append(loss)
         testlosses.append(compute_loss(ytest,data_set_test,w))
-            
-    print("test error =",np.mean(testlosses))
-    print("train error =", np.mean(trainlosses))
+
+    return np.mean(testlosses), np.mean(trainlosses)
+
+def cross_validation_log(y, tX, lambda_, degree, ratio, gamma):
+    
+    maxiter=10
+    init_w = np.zeros(tX.shape[1])
+    
+    for i in range(int(1/(1-ratio))):
+
+        xtrain, ytrain, xtest, ytest = split_data(tX, y, ratio)
+
+        weights_ = []
+        trainlosses = []
+        testlosses = []
+
+        data_set=build_poly(xtrain,degree)
+        data_set_test=build_poly(xtest,degree)
+        
+        w, loss = reg_logistic_regression(ytrain,data_set,lambda_, init_w,maxiter,gamma)
+        
+        weights_.append(w)
+        trainlosses.append(loss)
+        testlosses.append(compute_loss(ytest,data_set_test,w))
 
     return np.mean(testlosses), np.mean(trainlosses)
     
