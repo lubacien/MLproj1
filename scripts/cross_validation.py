@@ -115,8 +115,8 @@ def cross_validation_for_ridgereg(tX, y, lambda_, degree):
     '''_, tX_test, ids_test = load_csv_data(DATA_TEST_PATH)
     y_preds = predict_merge(tX_test,weights_,poly=True, degrees=degrees)
     OUTPUT_PATH = '../data/submission_splitt.csv'
-    create_csv_submission(ids_test, y_preds, OUTPUT_PATH)'''
-    return np.mean(testlosses), np.mean(trainlosses)
+    create_csv_submission(ids_test, 1y_preds, OUTPUT_PATH)
+    return 0
 
 def cross_validation(y, tX, lambda_, degree, ratio):
     
