@@ -20,7 +20,7 @@ def split_data(x, y, ratio, seed=1):
     return xtrain, ytrain, xtest, ytest
 
 
-def cross_validation_for_leastsquares(y,tx,ratio):
+def cross_validation_for_leastsquares(y,tX,ratio):
     #we split the data for crossvalidation:
     ratio=0.8 #ratio of data used for training
     for i in range(int(1/(1-ratio))):
@@ -30,11 +30,10 @@ def cross_validation_for_leastsquares(y,tx,ratio):
         weights_ = []
         trainlosses = []
         testlosses = []
-
-        w, loss = least_squares(y_set,data_set)
+        w, loss = least_squares(ytrain,xtrain)
         weights_.append(w)
         trainlosses.append(loss)
-        testlosses.append(compute_loss(y_set_test,data_set_test,w))
+        testlosses.append(compute_loss(ytest,xtest,w))
 
 
     print("test error =",np.mean(testlosses))

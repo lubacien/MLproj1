@@ -206,11 +206,11 @@ def ridge_regression(y, tx, lambda_ ):
 """
 def ridge_regression(y, tx, lambda_):
 
-    aI = 2 * tx.shape[0] * lambda_ * np.identity(tx.shape[1])
-    a = tx.T.dot(tx) + aI
-    b = tx.T.dot(y)
-    w= np.linalg.solve(a, b)
-    loss = compute_loss(y, tx, w)+ lambda_*np.linalg.norm(w)**2
+    penalty = 2 * tx.shape[0] * lambda_ * np.identity(tx.shape[1])
+    
+    w = np.linalg.solve(tx.T.dot(tx) + penalty, tx.T.dot(y))
+    
+    loss = compute_loss(y, tx, w)+lambda_*np.linalg.norm(w)**2
 
     return w,loss
 
