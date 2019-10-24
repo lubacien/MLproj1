@@ -50,11 +50,17 @@ def split_y(y, inds):
 def predict_merge(tX_test, weights_,poly = False, degrees = None):
     """ Takes as input the test dataset, splits it according to the jet number, predicts the y for each data set according to the corresponding model, and remerges the predicted data according to the test dataset"""
     
-    test_jets =(jet(tX_test)) 
+    test_jets =(jet(tX_test))
+
     inds_false = create_inds(test_jets, False) #creates the indexes to remove from the data set to form sets according to jet number
     inds_true = create_inds(test_jets, True)   #creates the indexes of data points for each jet number, for reconstruction purposes
     test_sets = jet_split(tX_test, inds_false) #splits the test set into 3 different sets according to the
-    
+
+    #we also need to normalize the test
+    for i in range(len(test_sets)):
+        test_sets[i] = replace_aberrant_values(test_sets[i])
+        test_sets[i] = standardize(test_sets[i])
+
     if poly == True:
         poly_set = []                                 
         for test_set, degree in zip(test_sets,degrees):
@@ -84,7 +90,9 @@ def replace_aberrant_values(tX):
     and  replaces it by the mean observed value of that feature.'''
     tX_repl_feat = np.copy(tX)
     means = []
-    
+
+    print(tX_repl_feat.shape)
+
     #compute the mean of each feature (column) without taking -999 values into account
     for j in range(tX_repl_feat.shape[1]):
         m = tX_repl_feat[:,j][tX_repl_feat[:,j] != -999].mean()
@@ -96,3 +104,10 @@ def replace_aberrant_values(tX):
         tX_repl_feat[:, i][mask] = means[i]
     
     return tX_repl_feat
+
+def standardize(x):
+
+    centered_data = x - np.mean(x, axis=0)
+    std_data = centered_data / np.std(centered_data, axis=0)
+
+    return std_data

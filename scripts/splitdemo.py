@@ -1,6 +1,6 @@
 import numpy as np
 from implementations import *
-from cross_validation import test_model
+from cross_validation import *
 from data_preprocessing import *
 from proj1_helpers import *
 import math
@@ -24,6 +24,8 @@ for data_set, y_set in zip(data_sets, y_sets):
     losses.append(loss)
 
 print('weights created: splitting and merging data' + "\n")
+print(losses)
+
 
 DATA_TEST_PATH = '../data/test.csv'
 _, tX_test, ids_test = load_csv_data(DATA_TEST_PATH)

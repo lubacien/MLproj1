@@ -47,7 +47,7 @@ def cross_validation_for_leastsquares(y,tX,ratio):
     OUTPUT_PATH = '../data/submission_splitt.csv'
     create_csv_submission(ids_test, y_preds, OUTPUT_PATH)
     '''
-    return np.mean(testlosses), np.mean(trainlosses)
+    return np.mean(testlosses), np.mean(trainlosses), w
 
 def cross_validation_for_ridgereg(tX, y, lambda_, degree):
 
