@@ -77,3 +77,22 @@ def predict_merge(tX_test, weights_,poly = False, degrees = None):
     trues, y_preds = zip(*sorted(zip(trues,y_preds))) #sorts the prediction back to the correct order
     
     return y_preds
+
+
+def replace_aberrant_values(tX):
+    '''Replaces the aberrant value (-999) for a given feature 
+    and  replaces it by the mean observed value of that feature.'''
+    tX_repl_feat = np.copy(tX)
+    means = []
+    
+    #compute the mean of each feature (column) without taking -999 values into account
+    for j in range(tX_repl_feat.shape[1]):
+        m = tX_repl_feat[:,j][tX_repl_feat[:,j] != -999].mean()
+        means.append(m)
+    
+    #change all -999 values of a column by the mean computed previously
+    for i in range(len(means)):
+        mask = tX_repl_feat[:, i] == -999
+        tX_repl_feat[:, i][mask] = means[i]
+    
+    return tX_repl_feat
