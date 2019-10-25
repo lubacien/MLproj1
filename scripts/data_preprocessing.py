@@ -47,7 +47,7 @@ def split_y(y, inds):
     
     return [y_jet0, y_jet1, y_jet2]
 
-def predict_merge(tX_test, weights_,poly = False, degrees = None):
+def predict_merge(tX_test, weights_,means,devs,poly = False, degrees = None):
     """ Takes as input the test dataset, splits it according to the jet number, predicts the y for each data set according to the corresponding model, and remerges the predicted data according to the test dataset"""
     
     test_jets =(jet(tX_test))
@@ -56,10 +56,11 @@ def predict_merge(tX_test, weights_,poly = False, degrees = None):
     inds_true = create_inds(test_jets, True)   #creates the indexes of data points for each jet number, for reconstruction purposes
     test_sets = jet_split(tX_test, inds_false) #splits the test set into 3 different sets according to the
 
-    #we also need to normalize the test
+    #we also need to normalize the test data
+
     for i in range(len(test_sets)):
         test_sets[i] = replace_aberrant_values(test_sets[i])
-        test_sets[i] = standardize(test_sets[i])
+        test_sets[i] = standardizetest(test_sets[i],means[i],devs[i])
 
     if poly == True:
         poly_set = []                                 
@@ -91,8 +92,6 @@ def replace_aberrant_values(tX):
     tX_repl_feat = np.copy(tX)
     means = []
 
-    print(tX_repl_feat.shape)
-
     #compute the mean of each feature (column) without taking -999 values into account
     for j in range(tX_repl_feat.shape[1]):
         m = tX_repl_feat[:,j][tX_repl_feat[:,j] != -999].mean()
@@ -109,5 +108,12 @@ def standardize(x):
 
     centered_data = x - np.mean(x, axis=0)
     std_data = centered_data / np.std(centered_data, axis=0)
+
+    return std_data, np.mean(x, axis=0), np.std(centered_data, axis=0)
+
+def standardizetest(x,trainingmean,trainingdev):
+
+    centered_data = x - trainingmean
+    std_data = centered_data / trainingdev
 
     return std_data

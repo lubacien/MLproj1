@@ -35,7 +35,7 @@ def cross_validation_for_leastsquares(y,tX,ratio):
         trainlosses.append(loss)
         testlosses.append(compute_loss(ytest,xtest,w))
 
-
+    print(weights_)
     print("test error =",np.mean(testlosses))
     print("train error =", np.mean(trainlosses))
 
@@ -47,7 +47,7 @@ def cross_validation_for_leastsquares(y,tX,ratio):
     OUTPUT_PATH = '../data/submission_splitt.csv'
     create_csv_submission(ids_test, y_preds, OUTPUT_PATH)
     '''
-    return np.mean(testlosses), np.mean(trainlosses), w
+    return np.mean(testlosses), np.mean(trainlosses), np.mean(weights_,axis=0)
 
 def cross_validation_for_ridgereg(tX, y, lambda_, degree):
 
