@@ -2,7 +2,20 @@ import numpy as np
 import math
 from proj1_helpers import *
 from implementations import *
- 
+
+def kill_correlation(tx,thresh):
+    correlationmat = np.corrcoef(tx,y=None,rowvar=False)
+    ind=[]
+    for i in range(tx.shape[1]):
+        for j in range(i):
+            if correlationmat[i,j]>=thresh:
+                ind.append(j)
+
+    tx= np.delete(tx,ind, axis=1)
+
+    return tx
+
+
 def jet(x):
     """
     Returns value corresponding to the 23 columns ( jet value
@@ -19,6 +32,7 @@ def jet(x):
 
 def trim_data(tX):
     """ Deletes columns that are entirely filled with aberrant values"""
+    tX = np.delete(tX,(22), axis=1)
     tX = tX[:, ~(tX == tX[0,:]).all(0)]
     return tX
 

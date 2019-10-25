@@ -1,4 +1,4 @@
-from costs import compute_mse
+from costs import *
 import math
 import numpy as np
 import random as random
@@ -12,6 +12,8 @@ def split_data(x, y, ratio, seed=1):
     and the rest dedicated to testing
     """
     # set seed
+    np.random.seed(seed)
+
     indices = random.sample(range(len(x)), int(ratio * len(x)))
     xtrain = x[indices]
     xtest = np.delete(x, indices,axis=0)
@@ -20,25 +22,26 @@ def split_data(x, y, ratio, seed=1):
     return xtrain, ytrain, xtest, ytest
 
 
-def cross_validation_for_leastsquares(y,tX,ratio):
+def cross_validation_for_leastsquares(y,tX, ratio):
     #we split the data for crossvalidation:
-    ratio=0.8 #ratio of data used for training
+    weights_ = []
+    trainlosses = []
+    testlosses = []
+    acc=[]
     for i in range(int(1/(1-ratio))):
 
-        xtrain, ytrain, xtest, ytest = split_data(tX, y, ratio, seed=1)
+        xtrain, ytrain, xtest, ytest = split_data(tX, y, ratio, seed=i)
 
-        weights_ = []
-        trainlosses = []
-        testlosses = []
         w, loss = least_squares(ytrain,xtrain)
         weights_.append(w)
         trainlosses.append(loss)
         testlosses.append(compute_loss(ytest,xtest,w))
+        acc.append(accuracy(ytest,xtest,w))
 
-    print(weights_)
+
     print("test error =",np.mean(testlosses))
     print("train error =", np.mean(trainlosses))
-
+    print("accuracy = ", np.mean(acc),np.std(acc))
     #print('weights created: splitting and merging data' + "\n")
     '''
     DATA_TEST_PATH = '../data/test.csv'
@@ -47,6 +50,7 @@ def cross_validation_for_leastsquares(y,tX,ratio):
     OUTPUT_PATH = '../data/submission_splitt.csv'
     create_csv_submission(ids_test, y_preds, OUTPUT_PATH)
     '''
+
     return np.mean(testlosses), np.mean(trainlosses), np.mean(weights_,axis=0)
 
 def cross_validation_for_ridgereg(tX, y, lambda_, degree):
@@ -103,14 +107,13 @@ def cross_validation_for_ridgereg(tX, y, lambda_, degree):
     '''
     
 def cross_validation_ridge(y, tX, lambda_, degree, ratio):
-    
+    weights_ = []
+    trainlosses = []
+    testlosses = []
+    acc = []
     for i in range(int(1/(1-ratio))):
 
-        xtrain, ytrain, xtest, ytest = split_data(tX, y, ratio)
-
-        weights_ = []
-        trainlosses = []
-        testlosses = []
+        xtrain, ytrain, xtest, ytest = split_data(tX, y, ratio, seed = i)
 
         data_set=build_poly(xtrain,degree)
         data_set_test=build_poly(xtest,degree)
@@ -120,8 +123,9 @@ def cross_validation_ridge(y, tX, lambda_, degree, ratio):
         weights_.append(w)
         trainlosses.append(loss)
         testlosses.append(compute_loss(ytest,data_set_test,w))
+        acc.append(accuracy(ytest, data_set_test, w))
 
-    return np.mean(testlosses), np.mean(trainlosses)
+    return np.mean(acc), np.mean(trainlosses), np.mean(weights_,axis=0)
 
 def cross_validation_log(y, tX, lambda_, degree, ratio, gamma):
     
@@ -143,7 +147,7 @@ def cross_validation_log(y, tX, lambda_, degree, ratio, gamma):
         
         weights_.append(w)
         trainlosses.append(loss)
-        testlosses.append(compute_loss(ytest,data_set_test,w))
+        testlosses.append(compute_mse(ytest,data_set_test,w))
 
     return np.mean(testlosses), np.mean(trainlosses)
     

@@ -10,7 +10,8 @@ DATA_TEST_PATH = '../data/train.csv'
 y,tX,ids = load_csv_data(DATA_TEST_PATH)
 print('data loaded')
 
-'''
+#tX=kill_correlation(tX,0.98)
+
 jet_set = jet(tX)
 inds = create_inds(jet_set, False)
 data_sets = jet_split(tX,inds)
@@ -18,29 +19,34 @@ y_sets = split_y(y,inds)
 
 means=[]
 devs=[]
-#cleans -999 and standardizes
 
+#cleans -999 and standardizes
 for i in range(len(data_sets)):
     data_sets[i] = replace_aberrant_values(data_sets[i])
     data_sets[i],meantrain,stdtrain = standardize(data_sets[i])
+    #we save the means and standard deviations to normalise the test
     means.append(meantrain)
     devs.append(stdtrain)
-    
 
 
 weights=[]
-test_error, train_error, w1 = cross_validation_for_leastsquares(y_sets[0], data_sets[0],0.8)
-weights.append(w1)
-test_error, train_error, w2 = cross_validation_for_leastsquares(y_sets[1], data_sets[1],0.8)
-weights.append(w2)
-test_error, train_error, w3 = cross_validation_for_leastsquares(y_sets[2], data_sets[2],0.8)
-weights.append(w3)
-'''
-tX=kill_correlation(tX,0.99)
-print(tX.shape)
-tX=replace_aberrant_values(tX)
-tX,mean,stdev= standardize(tX)
-testloss,trainloss,weights = cross_validation_for_leastsquares(y,tX,0.8)
+lams=[1e-3,1e-4,1e-5,1e-6]
+degs=[10,11]
+losses=[]
+for lam in lams:
+    for deg in degs:
+        print("lambda={l}, degree={d}".format(l=lam, d=deg))
+        testlosses = []
+        for data_set,y_set in zip(data_sets, y_sets):
+            testloss, trainloss, w = cross_validation_ridge(y_set,data_set,lam,deg,0.8)
+            print(testloss, trainloss)
+            testlosses.append(testloss)
+        losses.append([lam, deg, testlosses[0], testlosses[1], testlosses[2]])
+np.asarray(losses).reshape(-1,3)
+
+
+
+        #weights.append(w)
 
 
 '''

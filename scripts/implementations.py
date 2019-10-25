@@ -38,11 +38,11 @@ def build_poly(x, degree):
     # this function should return the matrix formed
     # by applying the polynomial basis to the input data
     # ***************************************************
-    phi=[]
-    for j in range(degree+1):
-        phi.append(x**j)
+    phi=np.ones(len(x))
+    for j in range(1,degree+1):
+        phi=np.c_[phi, np.power(x,j)]
     phi=np.reshape(phi,(x.shape[0],-1))
-    
+
     return phi
 
 """Costs"""
@@ -193,7 +193,7 @@ def least_squares_SGD(y, tx, initial_w, batch_size,  max_iters, gamma):
     return w, loss
 
 def least_squares(y, tx):
-    w=np.linalg.inv(np.transpose(tx).dot(tx)).dot(np.transpose(tx)).dot(y)
+    w= np.linalg.inv(np.transpose(tx).dot(tx)).dot(np.transpose(tx)).dot(y)
     mse=compute_loss(y,tx,w)
     return w,mse
 """
@@ -221,6 +221,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     ws = [initial_w]
     losses = []
     w = initial_w
+    y = (y + 1) / 2  # [-1, 1] -> [0, 1]
     for n_iter in range(max_iters):
         # computes gradient and loss
 
@@ -246,6 +247,7 @@ def reg_logistic_regression(y, tx, lambda_ , initial_w, max_iters, gamma):
     ws = [initial_w]
     losses = []
     w = initial_w
+    y = (y + 1) / 2  # [-1, 1] -> [0, 1]
     
     for n_iter in range(max_iters):
         # computes gradient and loss
