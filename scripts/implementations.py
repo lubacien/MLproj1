@@ -1,16 +1,6 @@
 import numpy as np
+from costs import *
 
-def load_data(sub_sample=True, add_outlier=False):
-
-    path_dataset = "data/train.csv"
-    features = np.genfromtxt(
-        path_dataset, delimiter=",", skip_header=1, usecols=range(2,32,1))
-
-    y = np.genfromtxt(
-        path_dataset, delimiter=",", skip_header=1, usecols=[1],
-        converters={1: lambda x: 0 if b"s" in x else 1})
-
-    return y, features
 
 def standardize(x):
     """Standardize the original data set."""
@@ -41,7 +31,7 @@ def build_poly(x, degree):
     phi=np.ones(len(x))
     for j in range(1,degree+1):
         phi=np.c_[phi, np.power(x,j)]
-    phi=np.reshape(phi,(x.shape[0],-1))
+    #phi=np.reshape(phi,(x.shape[0],-1))
 
     return phi
 
@@ -207,7 +197,7 @@ def ridge_regression(y, tx, lambda_ ):
 def ridge_regression(y, tx, lambda_):
 
     penalty = 2 * tx.shape[0] * lambda_ * np.identity(tx.shape[1])
-    
+
     w = np.linalg.solve(tx.T.dot(tx) + penalty, tx.T.dot(y))
     
     loss = compute_loss(y, tx, w)+lambda_*np.linalg.norm(w)**2
