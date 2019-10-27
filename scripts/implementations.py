@@ -120,8 +120,8 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
 
         ws.append(w)
         losses.append(loss)
-        print("Gradient Descent({bi}/{ti}): loss={l}".format(
-                bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]), end="\r")
+        #print("Gradient Descent({bi}/{ti}): loss={l}".format(
+         #       bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]), end="\r")
         
 
     return w, loss
@@ -205,7 +205,7 @@ def ridge_regression(y, tx, lambda_):
     return w,loss
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
-    """Logistic regression using gradient descent or SGD"""
+    """Logistic regression using gradient descent"""
     
         # Define parameters to store w and loss
     ws = [initial_w]
@@ -225,8 +225,8 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
 
         ws.append(w)
         losses.append(loss)
-        print("logistic regression: Gradient Descent({bi}/{ti}): loss={l}".format(
-            bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]), end="\r")
+        #print("logistic regression: Gradient Descent({bi}/{ti}): loss={l}".format(
+         #   bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]), end="\r")
     
     return w, loss
 
@@ -252,8 +252,8 @@ def reg_logistic_regression(y, tx, lambda_ , initial_w, max_iters, gamma):
 
         ws.append(w)
         losses.append(loss)
-        print("regularised logistic regression: Gradient Descent({bi}/{ti}): loss={l}".format(
-            bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]), end="\r")
+        #print("regularised logistic regression: Gradient Descent({bi}/{ti}): loss={l}".format(
+         #   bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]), end="\r")
     return w, loss
 
 
@@ -264,7 +264,7 @@ def find_g(y,tX, w_ini, inter):
     losses = []
     gammas = []
     ran = inter[0]-inter[1]
-    for g in np.linspace(inter[0],inter[1], 10):
+    for g in np.linspace(inter[0],inter[1], 20):
         weight, loss = least_squares_GD(y,tX,w_ini, 2,g)
         losses.append(loss)
         gammas.append(g)
@@ -274,7 +274,6 @@ def find_g(y,tX, w_ini, inter):
         #print(inter)
     ind = losses.index(min(losses))
     gamma = gammas[ind]
-    print("\n")
     return gamma
 
 ###################### FEATURE FIX ###########################################

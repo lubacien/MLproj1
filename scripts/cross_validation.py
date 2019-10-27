@@ -93,6 +93,8 @@ def cross_validation_for_GD(y,tX,degree):
         xtrain = np.delete(tX, k_indices[k], axis=0)
 
         # form data with polynomial degree
+        xtest = build_poly(xtest, degree)
+        xtrain = build_poly(xtrain, degree)
 
         initial_w=np.zeros(xtrain.shape[1])
         gamma= find_g(ytrain,xtrain, initial_w, [1e-7,1e-6])
@@ -144,46 +146,85 @@ def cross_validation_ridge(y, tX, lambda_, degree):
         
         acc.append(accuracy(ytest,xtestpol,w))
         weights_.append(w)
-        
-    '''
-    for i in range(int(1/(1-ratio))):
-
-        xtrain, ytrain, xtest, ytest = split_data(tX, y, ratio, seed = i)
-
-        data_set=build_poly(xtrain,degree)
-        data_set_test=build_poly(xtest,degree)
-
-        w, loss = ridge_regression(ytrain,data_set,lambda_)
-
-        weights_.append(w)
-        trainlosses.append(loss)
-        testlosses.append(compute_loss(ytest,data_set_test,w))
-        acc.append(accuracy(ytest, data_set_test, w))
-        '''
 
     return acc, np.mean(testlosses),trainlosses, np.mean(weights_,axis=0)
 
-def cross_validation_log(y, tX, lambda_, degree, ratio, gamma):
-    
-    maxiter=10
-    init_w = np.zeros(tX.shape[1])
-    
-    for i in range(int(1/(1-ratio))):
+def cross_validation_for_logistic(y, tX, degree):
+    weights_ = []
+    trainlosses = []
+    testlosses = []
+    acc = []
 
-        xtrain, ytrain, xtest, ytest = split_data(tX, y, ratio)
+    max_iters = 100
+    seed = 1
+    k_fold = 5
 
-        weights_ = []
-        trainlosses = []
-        testlosses = []
+    k_indices = build_k_indices(y, k_fold, seed)
 
-        data_set=build_poly(xtrain,degree)
-        data_set_test=build_poly(xtest,degree)
-        
-        w, loss = reg_logistic_regression(ytrain,data_set,lambda_, init_w,maxiter,gamma)
-        
+    for k in range(k_fold):
+        # get k'th subgroup in test, others in train
+        ytest = y[k_indices[k]]
+        ytrain = np.delete(y, k_indices[k])
+        xtest = tX[k_indices[k]]
+        xtrain = np.delete(tX, k_indices[k], axis=0)
+
+        # form data with polynomial degree
+        xtest = build_poly(xtest, degree)
+        xtrain = build_poly(xtrain, degree)
+
+        initial_w = np.zeros(xtrain.shape[1])
+        gamma = find_g(ytrain, xtrain, initial_w, [1e-7, 1e-6])
+        w, mse = logistic_regression(ytrain, xtrain, initial_w, max_iters, gamma)
+
+        loss_tr = mse
+        loss_te = compute_mse(ytest, xtest, w)
+        trainlosses.append(loss_tr)
+        testlosses.append(loss_te)
+
+        acc.append(accuracy(ytest, xtest, w))
         weights_.append(w)
-        trainlosses.append(loss)
-        testlosses.append(compute_mse(ytest,data_set_test,w))
 
-    return np.mean(testlosses), np.mean(trainlosses)
-    
+    print("test error =", np.mean(testlosses))
+    print("train error =", np.mean(trainlosses))
+    print("accuracy = ", np.mean(acc), np.std(acc))
+    return acc, np.mean(testlosses), trainlosses, np.mean(weights_, axis=0)
+
+def cross_validation_for_reglogistic(y, tX,lambda_, degree):
+    weights_ = []
+    trainlosses = []
+    testlosses = []
+    acc = []
+
+    max_iters = 100
+    seed = 1
+    k_fold = 5
+
+    k_indices = build_k_indices(y, k_fold, seed)
+
+    for k in range(k_fold):
+        # get k'th subgroup in test, others in train
+        ytest = y[k_indices[k]]
+        ytrain = np.delete(y, k_indices[k])
+        xtest = tX[k_indices[k]]
+        xtrain = np.delete(tX, k_indices[k], axis=0)
+
+        # form data with polynomial degree
+        xtest = build_poly(xtest, degree)
+        xtrain = build_poly(xtrain, degree)
+
+        initial_w = np.zeros(xtrain.shape[1])
+        gamma = find_g(ytrain, xtrain, initial_w, [1e-7, 1e-6])
+        w, mse = reg_logistic_regression(ytrain, xtrain, lambda_, initial_w, max_iters, gamma)
+
+        loss_tr = mse
+        loss_te = compute_mse(ytest, xtest, w)
+        trainlosses.append(loss_tr)
+        testlosses.append(loss_te)
+
+        acc.append(accuracy(ytest, xtest, w))
+        weights_.append(w)
+
+    print("test error =", np.mean(testlosses))
+    print("train error =", np.mean(trainlosses))
+    print("accuracy = ", np.mean(acc), np.std(acc))
+    return acc, np.mean(testlosses), trainlosses, np.mean(weights_, axis=0)
