@@ -3,6 +3,80 @@ import math
 from proj1_helpers import *
 from implementations import *
 
+
+def jet(x):
+    """
+    Returns value corresponding to the 23 columns ( jet value
+    of 0, 1, 2 and 3 ).
+    """
+    jet_set = {
+        0: x[:, 22] == 0,
+        1: x[:, 22] == 1,
+        2: np.logical_or(x[:, 22] == 2,x[:, 22] == 3)
+        }
+    
+    return jet_set
+
+def remove_features(tX):
+    """ Deletes columns that are entirely filled with aberrant values"""
+    tX = np.delete(tX,(22), axis=1)
+    tX = tX[:, ~(tX == tX[0,:]).all(0)]
+    return tX
+
+
+def replace_aberrant_values(tX):
+    '''Replaces the aberrant value (-999) for a given feature 
+     by the mean observed value of that feature.'''
+    tX_repl_feat = np.copy(tX)
+    means = []
+    
+    #compute the mean of each feature (column) without taking -999 values into account
+    for j in range(tX_repl_feat.shape[1]):
+        m = tX_repl_feat[:,j][tX_repl_feat[:,j] != -999].mean()
+        means.append(m)
+        
+    #change all -999 values of a column by the mean computed previously
+    for i in range(len(means)):
+        mask = tX_repl_feat[:, i] == -999
+        tX_repl_feat[:, i][mask] = means[i]
+    
+    return tX_repl_feat
+
+
+def standardize(x):
+
+    centered_data = x - np.mean(x, axis=0)
+    std_data = centered_data / np.std(centered_data, axis=0)
+
+    return std_data
+
+
+def preprocess_data(tX):
+    
+    tX = remove_features(tX)
+    #print(tX)
+    tX = replace_aberrant_values(tX)
+    #print(tX)
+    tX = standardize(tX)
+    
+    return(tX)
+
+def predict_merge(tX_test, weights, y_pred, indices):
+    
+    y_pred[indices] = predict_labels(weights, tX_test)
+    print(y_pred)
+    
+    return y_pred
+
+def build_poly(x, degree):
+    """polynomial basis functions for input data x, for j=0 up to j=degree."""
+    poly = np.ones((len(x), 1))
+    for deg in range(1, degree + 1):
+        poly = np.c_[poly, np.power(x, deg)]
+    return poly
+
+'''
+
 def kill_correlation(tx,thresh):
     correlationmat = np.corrcoef(tx,y=None,rowvar=False)
     ind=[]
@@ -61,7 +135,7 @@ def split_y(y, inds):
     
     return [y_jet0, y_jet1, y_jet2]
 
-def predict_merge(tX_test, weights_,means,devs,poly = False, degrees = None):
+def predict_merge(tX_test, weights_,means,devs,poly, degrees):
     """ Takes as input the test dataset, splits it according to the jet number, predicts the y for each data set according to the corresponding model, and remerges the predicted data according to the test dataset"""
     
     test_jets =(jet(tX_test))
@@ -78,10 +152,11 @@ def predict_merge(tX_test, weights_,means,devs,poly = False, degrees = None):
 
     if poly == True:
         poly_set = []                                 
-        for test_set, degree in zip(test_sets,degrees):
+        for test_set,degree in zip(test_sets,degrees):
             poly_set.append(build_poly(test_set, degree))
-            test_sets = poly_set
-
+            
+        test_sets = poly_set
+    print((test_sets))
     trues = np.concatenate(inds_true).ravel()   #indexes of each splitted data point
     
     y_preds = []
@@ -101,8 +176,8 @@ def predict_merge(tX_test, weights_,means,devs,poly = False, degrees = None):
 
 
 def replace_aberrant_values(tX):
-    '''Replaces the aberrant value (-999) for a given feature 
-    and  replaces it by the mean observed value of that feature.'''
+    Replaces the aberrant value (-999) for a given feature 
+    and  replaces it by the mean observed value of that feature.
     tX_repl_feat = np.copy(tX)
     means = []
 
@@ -131,3 +206,4 @@ def standardizetest(x,trainingmean,trainingdev):
     std_data = centered_data / trainingdev
 
     return std_data
+'''
