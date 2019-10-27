@@ -42,22 +42,15 @@ def replace_aberrant_values(tX):
     
     return tX_repl_feat
 
-
-def standardize(x):
-
-    centered_data = x - np.mean(x, axis=0)
-    std_data = centered_data / np.std(centered_data, axis=0)
-
-    return std_data
-
-
 def preprocess_data(tX):
     
     tX = remove_features(tX)
     #print(tX)
     tX = replace_aberrant_values(tX)
     #print(tX)
-    tX = standardize(tX)
+    tX= kill_correlation(tX,0.95)
+    
+    tX,mean,std = standardize(tX)
     
     return(tX)
 
@@ -75,7 +68,7 @@ def build_poly(x, degree):
         poly = np.c_[poly, np.power(x, deg)]
     return poly
 
-'''
+
 
 def kill_correlation(tx,thresh):
     correlationmat = np.corrcoef(tx,y=None,rowvar=False)
@@ -142,7 +135,7 @@ def predict_merge(tX_test, weights_,means,devs,poly, degrees):
 
     inds_false = create_inds(test_jets, False) #creates the indexes to remove from the data set to form sets according to jet number
     inds_true = create_inds(test_jets, True)   #creates the indexes of data points for each jet number, for reconstruction purposes
-    test_sets = jet_split(tX_test, inds_false) #splits the test set into 3 different sets according to the
+    test_sets = jet_split(tX_test, inds_false) #splits the test set into 3 different sets according to the jet number
 
     #we also need to normalize the test data
 
@@ -154,9 +147,9 @@ def predict_merge(tX_test, weights_,means,devs,poly, degrees):
         poly_set = []                                 
         for test_set,degree in zip(test_sets,degrees):
             poly_set.append(build_poly(test_set, degree))
-            
         test_sets = poly_set
-    print((test_sets))
+        print(poly_set)
+
     trues = np.concatenate(inds_true).ravel()   #indexes of each splitted data point
     
     y_preds = []
@@ -176,8 +169,8 @@ def predict_merge(tX_test, weights_,means,devs,poly, degrees):
 
 
 def replace_aberrant_values(tX):
-    Replaces the aberrant value (-999) for a given feature 
-    and  replaces it by the mean observed value of that feature.
+    #Replaces the aberrant value (-999) for a given feature 
+    #and  replaces it by the mean observed value of that feature.
     tX_repl_feat = np.copy(tX)
     means = []
 
@@ -206,4 +199,3 @@ def standardizetest(x,trainingmean,trainingdev):
     std_data = centered_data / trainingdev
 
     return std_data
-'''

@@ -43,6 +43,7 @@ for lam in lams:
             print("testloss={tl}, trainloss={tr}".format(tl =testloss, tr = trainloss))
             val[accuracy] = [lam, deg]
 
+matrix=np.asarray(losses).reshape(-1,3)
 
 for val in vals:
     tche = max(val)

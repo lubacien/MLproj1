@@ -33,6 +33,9 @@ for i in range(len(data_sets)):
     wi, lossi = ridge_regression(y_sets[i], data_sets[i], lambdas[i])
     weights.append(wi)
     print(lossi)
+    #acc, testloss,trainloss,weights =cross_validation_ridge(y_sets[i], data_sets[i],lambdas[i],degrees_[i])
+    #print('accuracy = {acc} tesloss= {testloss} trainloss= {trainloss}'.format(acc=acc,testloss=testloss,trainloss=trainloss))
+
 
 print(len(weights))
 

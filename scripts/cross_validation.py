@@ -34,53 +34,94 @@ def build_k_indices(y, k_fold, seed):
 
 
 
-def cross_validation_for_leastsquares(y,tX, ratio):
-    #we split the data for crossvalidation:
+def cross_validation_for_leastsquares(y,tX,degree):
     weights_ = []
     trainlosses = []
     testlosses = []
-    acc=[]
-    for i in range(int(1/(1-ratio))):
+    acc = []
 
-        xtrain, ytrain, xtest, ytest = split_data(tX, y, ratio, seed=i)
+    seed = 1
+    k_fold = 5
 
-        w, loss = least_squares(ytrain,xtrain)
+    k_indices = build_k_indices(y, k_fold, seed)
+
+    for k in range(k_fold):
+        # get k'th subgroup in test, others in train
+        ytest = y[k_indices[k]]
+        ytrain = np.delete(y, k_indices[k])
+        xtest = tX[k_indices[k]]
+        xtrain = np.delete(tX, k_indices[k], axis=0)
+
+        # form data with polynomial degree
+        xtestpol = build_poly(xtest, degree)
+        xtrainpol = build_poly(xtrain, degree)
+
+        # ridge regression:
+        w, mse = least_squares(ytrain, xtrainpol)
+
+        loss_tr = mse
+        loss_te = compute_mse(ytest, xtestpol, w)
+        trainlosses.append(loss_tr)
+        testlosses.append(loss_te)
+
+        acc.append(accuracy(ytest, xtestpol, w))
         weights_.append(w)
-        trainlosses.append(loss)
-        testlosses.append(compute_loss(ytest,xtest,w))
-        acc.append(accuracy(ytest,xtest,w))
 
-
-    print("test error =",np.mean(testlosses))
+    print("test error =", np.mean(testlosses))
     print("train error =", np.mean(trainlosses))
-    print("accuracy = ", np.mean(acc),np.std(acc))
-    #print('weights created: splitting and merging data' + "\n")
-    '''
-    DATA_TEST_PATH = '../data/test.csv'
-    _, tX_test, ids_test = load_csv_data(DATA_TEST_PATH)
-    y_preds = predict_merge(tX_test,weights_)
-    OUTPUT_PATH = '../data/submission_splitt.csv'
-    create_csv_submission(ids_test, y_preds, OUTPUT_PATH)
-    '''
-
-    return np.mean(testlosses), np.mean(trainlosses), np.mean(weights_,axis=0)
-
-
+    print("accuracy = ", np.mean(acc), np.std(acc))
+    return acc, np.mean(testlosses), trainlosses, np.mean(weights_,axis=0)
     
-def cross_validation_ridge(y, tX, lambda_, degree, ratio):
+def cross_validation_for_GD(y,tX,degree):
     weights_ = []
     trainlosses = []
     testlosses = []
     acc = []
     
     
+    max_iters=100
     seed = 1
-    k_fold = 4
+    k_fold = 5
+
+    k_indices = build_k_indices(y, k_fold, seed)
+
+    for k in range(k_fold):
+        # get k'th subgroup in test, others in train
+        ytest = y[k_indices[k]]
+        ytrain = np.delete(y, k_indices[k])
+        xtest = tX[k_indices[k]]
+        xtrain = np.delete(tX, k_indices[k], axis=0)
+
+        # form data with polynomial degree
+
+        initial_w=np.zeros(xtrain.shape[1])
+        gamma= find_g(ytrain,xtrain, initial_w, [1e-7,1e-6])
+        w, mse= least_squares_GD(ytrain, xtrain, initial_w, max_iters, gamma)
+
+        loss_tr = mse
+        loss_te = compute_mse(ytest, xtest, w)
+        trainlosses.append(loss_tr)
+        testlosses.append(loss_te)
+
+        acc.append(accuracy(ytest, xtest, w))
+        weights_.append(w)
+
+    print("test error =", np.mean(testlosses))
+    print("train error =", np.mean(trainlosses))
+    print("accuracy = ", np.mean(acc), np.std(acc))
+    return acc, np.mean(testlosses), trainlosses, np.mean(weights_,axis=0)
+    
+def cross_validation_ridge(y, tX, lambda_, degree):
+    weights_ = []
+    trainlosses = []
+    testlosses = []
+    acc = []
+
+    seed = 1
+    k_fold = 5
     
     k_indices = build_k_indices(y,k_fold,seed)
-    
-    
-    
+
     for k in range(k_fold):
         # get k'th subgroup in test, others in train
         ytest=y[k_indices[k]]
@@ -92,9 +133,7 @@ def cross_validation_ridge(y, tX, lambda_, degree, ratio):
         # form data with polynomial degree
         xtestpol=build_poly(xtest,degree)
         xtrainpol=build_poly(xtrain,degree)
-        
-        
-        
+
         # ridge regression:
         w, mse = ridge_regression(ytrain,xtrainpol,lambda_)
         
@@ -122,7 +161,7 @@ def cross_validation_ridge(y, tX, lambda_, degree, ratio):
         acc.append(accuracy(ytest, data_set_test, w))
         '''
 
-    return np.mean(acc), np.mean(testlosses),np.mean(trainlosses), np.mean(weights_,axis=0)
+    return acc, np.mean(testlosses),trainlosses, np.mean(weights_,axis=0)
 
 def cross_validation_log(y, tX, lambda_, degree, ratio, gamma):
     
