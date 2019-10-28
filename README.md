@@ -4,7 +4,7 @@
 # About the Project
 Using real CERN partcile accelerator data, we implemented a machine learning model able to detect the collision decay signature of a Higgs particle, in order to recreate the process that led to the discovery of the Higgs Boson.
 
-# Folder Organisation
+# Code Architecture
 In this section we explain how our project folder is organised and where to find the needed files.
 
 ### Data Folder
