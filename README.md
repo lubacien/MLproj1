@@ -12,7 +12,7 @@ In this section we explain how our project folder is organised and where to find
 
 All the CERN particle accelerator data as well as our predictions are found in the **/data** folder. It consists of:
 
-1. **sample-submission.csv**: file containing our predictions when the run.py code is executed
+1. **submission_ridge_reg.csv**: file containing our predictions when the run.py code is executed
 2. **train.csv** : train set data (imported by the user)
 3. **test.csv**: test set data (imported by the user)
 
@@ -34,9 +34,9 @@ All our project implementation can be found within the **/scripts** folder.
 In this section we explain how to run the code that provided our best submission on the Aicrowd EPFL Higgs Challenge.
 
 1. Download our .zip project folder and exctract it
-2. Open your terminal and from the root of the repository execute the following command
+2. Open your terminal and from the script folder execute the following command
 ```sh
-python3 scripts/run.py
+python3 run.py
 ```
 3. After execution, the obtained predictions are available in the **sample-submission.csv** file
 4. Upload this file on the Aicrowd Higgs Challenge
