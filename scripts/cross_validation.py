@@ -71,7 +71,7 @@ def cross_validation_for_leastsquares(y,tX,degree):
     print("test error:", np.mean(testlosses))
     print("train error:", np.mean(trainlosses))
     print("accuracy:", np.mean(acc))
-    return np.mean(acc), np.mean(testlosses), np.mean(trainlosses), np.mean(weights_,axis=0)
+    return acc, np.mean(testlosses), np.mean(trainlosses), np.mean(weights_,axis=0)
     
 def cross_validation_for_GD(y,tX,degree, stoch = False):
     weights_ = []
