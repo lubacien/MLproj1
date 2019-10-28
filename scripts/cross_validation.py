@@ -1,9 +1,10 @@
-from costs import *
 import math
 import numpy as np
 import random as random
+from costs import *
 from data_preprocessing import *
 from proj1_helpers import *
+from implementations import *
 
 def split_data(x, y, ratio, seed=1):
     """
@@ -98,12 +99,12 @@ def cross_validation_for_GD(y,tX,degree, stoch = False):
 
         initial_w=np.zeros(xtrain.shape[1])
         if stoch == False:
-            gamma= find_g(ytrain,xtrain, initial_w, [1e-7,1e-6])
-            w, mse= least_squares_GD(ytrain, xtrain, initial_w, max_iters, gamma)
+            gamma = find_g(ytrain,xtrain, initial_w, [1e-7,1e-6], stoch = False)
+            w, mse = least_squares_GD(ytrain, xtrain, initial_w, max_iters, gamma)
             
         if stoch == True:
             
-            gamma=find_g(ytrain,xtrain,initial_w,[1e-6,1e-7], stoch = True)
+            gamma =find_g(ytrain,xtrain,initial_w,[1e-6,1e-7], stoch = True)
             w, mse = least_squares_SGD(ytrain, xtrain, initial_w, 1, max_iters, gamma)
 
         loss_tr = mse
@@ -240,3 +241,20 @@ def cross_validation_for_reglogistic(y, tX,lambda_, degree):
     print("accuracy:", np.mean(acc))
     '''
     return np.mean(acc), np.mean(testlosses), np.mean(trainlosses), np.mean(weights_,axis=0)
+
+def find_g(y,tX, w_ini, inter, stoch = False):
+    losses = []
+    gammas = []
+    ran = inter[0]-inter[1]
+    for g in np.linspace(inter[0],inter[1], 10):
+        if stoch == False:
+            weight, loss = least_squares_GD(y,tX,w_ini, 2,g)
+        if stoch == True:
+            weight, loss = least_squares_SGD(y,tX, w_ini,1, 2, g)
+        losses.append(loss)
+        gammas.append(g)
+
+    ind = losses.index(min(losses))
+    gamma = gammas[ind]
+
+    return gamma

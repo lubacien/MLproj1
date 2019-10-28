@@ -1,95 +1,10 @@
 import numpy as np
 from costs import *
-
-
-
-
-def build_model_data(y,tx):
-    """Form (y,tX) to get regression data in matrix form. (adds 1s for the w0)"""
-
-    num_samples = len(y)
-    tx = np.c_[np.ones(num_samples), tx]
-    return y, tx
-
-def build_poly(x, degree):
-    """polynomial basis functions for input data x, for j=0 up to j=degree."""
-    # ***************************************************
-    # INSERT YOUR CODE HERE
-    # polynomial basis function: TODO
-    # this function should return the matrix formed
-    # by applying the polynomial basis to the input data
-    # ***************************************************
-    phi=np.ones(len(x))
-    for j in range(1,degree+1):
-        phi=np.c_[phi, np.power(x,j)]
-    #phi=np.reshape(phi,(x.shape[0],-1))
-
-    return phi
-
-"""Costs"""
-
-def compute_loss_log(y, tx, w):
-    """compute the cost by negative log likelihood."""
-        
-    return np.log(1+np.exp(tx.dot(w))).sum()-y.T.dot(tx).dot(w).sum()
-
-def sigmoid(t):
-    """apply sigmoid function on t."""
-    return np.exp(t)/(np.exp(t)+1)
-
-def compute_gradient_log(y, tx, w):
-    return np.transpose(tx) @ (sigmoid(tx@w)-y)
-
-def compute_gradient(y, tx, w):
-    return (-1/(tx.shape[0]))*(np.transpose(tx).dot(y-tx.dot(w)))
-
-def compute_stoch_gradient(y, tx, w):
-
-    return (-1/(tx.shape[0]))*(np.transpose(tx).dot(y-tx.dot(w)))
-
-
-
-
-def compute_loss(y, tx, w):
-    """Calculate the loss (MSE)
-    """
-    e = y - tx.dot(w)
-    return (1 / (2 * tx.shape[0])) * np.transpose(e).dot(e)
+from gradient import *
+from data_preprocessing import *
 
 """Implementations"""
 
-def least_squares_GD_opt(y, tx, initial_w, max_iters, gamma):
-
-    """Gradient descent algorithm."""
-    # Define parameters to store w and loss
-    ws = [initial_w]
-    losses = [1]
-    w = initial_w
-    for n_iter in range(max_iters):
-        # computes gradient and loss
-
-        grad = compute_gradient(y, tx, w)
-        loss = compute_loss(y, tx, w)
-        
-        if loss > losses[n_iter]:
-            gamma=find_g(y,tx, w,[gamma-1e-1*gamma,gamma])
-            print("gamma is too high, new gamma = {g}".format(g=gamma))
-        elif loss > losses[n_iter]*0.999999:
-            gamma=find_g(y,tx, w,[gamma,gamma+1e-1*gamma])
-            print("gamma is too low, new gamma = {g}".format(g=gamma))
-        #updates w
-
-        w = w - gamma * grad
-
-        # store w and loss
-
-        ws.append(w)
-        losses.append(loss)
-        print("Gradient Descent({bi}/{ti}): loss={l}".format(
-                bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]), end="\r")
-        
-
-    return w, loss #we return only the last loss and w
 
 def least_squares_GD(y, tx, initial_w, max_iters, gamma, stoch = False):
 
@@ -113,36 +28,8 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma, stoch = False):
 
         ws.append(w)
         losses.append(loss)
-        #print("Gradient Descent({bi}/{ti}): loss={l}".format(
-         #       bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]), end="\r")
-        
 
     return w, loss
-
-def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
-    """
-    Generate a minibatch iterator for a dataset.
-    Takes as input two iterables (here the output desired values 'y' and the input data 'tx')
-    Outputs an iterator which gives mini-batches of `batch_size` matching elements from `y` and `tx`.
-    Data can be randomly shuffled to avoid ordering in the original data messing with the randomness of the minibatches.
-    Example of use :
-    for minibatch_y, minibatch_tx in batch_iter(y, tx, 32):
-        <DO-SOMETHING>
-    """
-    data_size = len(y)
-
-    if shuffle:
-        shuffle_indices = np.random.permutation(np.arange(data_size))
-        shuffled_y = y[shuffle_indices]
-        shuffled_tx = tx[shuffle_indices]
-    else:
-        shuffled_y = y
-        shuffled_tx = tx
-    for batch_num in range(num_batches):
-        start_index = batch_num * batch_size
-        end_index = min((batch_num + 1) * batch_size, data_size)
-        if start_index != end_index:
-            yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
 
 
 def least_squares_SGD(y, tx, initial_w, batch_size,  max_iters, gamma):
@@ -172,18 +59,14 @@ def least_squares_SGD(y, tx, initial_w, batch_size,  max_iters, gamma):
 
     return w, loss
 
+
 def least_squares(y, tx):
     w= np.linalg.inv(np.transpose(tx).dot(tx)).dot(np.transpose(tx)).dot(y)
     mse=compute_loss(y,tx,w)
     return w,mse
-"""
-def ridge_regression(y, tx, lambda_ ):
-    
 
-    w = np.linalg.inv(np.transpose(tx).dot(tx) + lambda_ *(2 * len(y)) * np.eye(tx.shape[1], tx.shape[1])).dot(np.transpose(tx)).dot(y)
-    loss = compute_loss(y, tx, w)#+ lambda_*np.linalg.norm(w)**2
-    return w, loss
-"""
+
+
 def ridge_regression(y, tx, lambda_):
 
     penalty = 2 * tx.shape[0] * lambda_ * np.identity(tx.shape[1])
@@ -193,6 +76,8 @@ def ridge_regression(y, tx, lambda_):
     loss = compute_loss(y, tx, w) #+lambda_*np.linalg.norm(w)**2
 
     return w,loss
+
+
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """Logistic regression using gradient descent"""
@@ -220,6 +105,8 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     
     return w, loss
 
+
+
 def reg_logistic_regression(y, tx, lambda_ , initial_w, max_iters, gamma):
     """Regularized logistic regression using gradient descent or SGD"""
    
@@ -246,66 +133,3 @@ def reg_logistic_regression(y, tx, lambda_ , initial_w, max_iters, gamma):
          #   bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]), end="\r")
     return w, loss
 
-
-
-#############################################################################
-
-def find_g(y,tX, w_ini, inter, stoch = False):
-    losses = []
-    gammas = []
-    ran = inter[0]-inter[1]
-    for g in np.linspace(inter[0],inter[1], 10):
-        if stoch == False:
-            weight, loss = least_squares_GD(y,tX,w_ini, 2,g)
-        if stoch == True:
-            weight, loss = least_squares_SGD(y,tX, w_ini,1, 2, g)
-        losses.append(loss)
-        gammas.append(g)
-    #ran = ran/10
-        
-       # inter = [g-ran, g+ran]
-        #print(inter)
-    ind = losses.index(min(losses))
-    gamma = gammas[ind]
-
-    return gamma
-
-
-
-###################### FEATURE FIX ###########################################
-def replace_aberrant_values(tX):
-    '''Replaces the aberrant value (-999) for a given feature 
-    and  replaces it by the mean observed value of that feature.'''
-    tX_repl_feat = np.copy(tX)
-    means = []
-    
-    #compute the mean of each feature (column) without taking -999 values into account
-    for j in range(tX_repl_feat.shape[1]):
-        m = tX_repl_feat[:,j][tX_repl_feat[:,j] != -999].mean()
-        means.append(m)
-    
-    #change all -999 values of a column by the mean computed previously
-    for i in range(len(means)):
-        mask = tX_repl_feat[:, i] == -999
-        tX_repl_feat[:, i][mask] = means[i]
-    
-    return tX_repl_feat
-
-
-
-
-def delete_aberrant_features(tX, tX_test, frac):
-    if (frac < 0) or (frac > 1):
-        print('Fraction is not correct.')
-        return tX
-    
-    tX_del_feat = np.copy(tX)
-    feat_to_delete = []
-    
-    for i in range(tX_del_feat.shape[1]):
-        if (np.count_nonzero(tX_del_feat[:,i] == -999)/tX_del_feat.shape[0]) > frac:
-            feat_to_delete.append(i)
-    
-    tX_del_feat = np.delete(tX_del_feat, feat_to_delete, 1)
-    tX_del_test = np.delete(tX_test, feat_to_delete, 1)
-    return tX_del_feat, tX_del_test
