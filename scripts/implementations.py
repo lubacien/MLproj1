@@ -2,15 +2,6 @@ import numpy as np
 from costs import *
 
 
-def standardize(x):
-    """Standardize the original data set."""
-    mean_x = np.mean(x,axis=0)
-    print(mean_x.shape)
-    x = x - mean_x
-
-    std_x = np.std(x,axis=0)
-    x = x / std_x
-    return x, mean_x, std_x
 
 
 def build_model_data(y,tx):
@@ -44,10 +35,6 @@ def compute_loss_log(y, tx, w):
 
 def sigmoid(t):
     """apply sigmoid function on t."""
-    # ***************************************************
-    # INSERT YOUR CODE HERE
-    # TODO
-    # ***************************************************
     return np.exp(t)/(np.exp(t)+1)
 
 def compute_gradient_log(y, tx, w):
@@ -55,6 +42,12 @@ def compute_gradient_log(y, tx, w):
 
 def compute_gradient(y, tx, w):
     return (-1/(tx.shape[0]))*(np.transpose(tx).dot(y-tx.dot(w)))
+
+def compute_stoch_gradient(y, tx, w):
+
+    return (-1/(tx.shape[0]))*(np.transpose(tx).dot(y-tx.dot(w)))
+
+
 
 
 def compute_loss(y, tx, w):
@@ -98,7 +91,7 @@ def least_squares_GD_opt(y, tx, initial_w, max_iters, gamma):
 
     return w, loss #we return only the last loss and w
 
-def least_squares_GD(y, tx, initial_w, max_iters, gamma):
+def least_squares_GD(y, tx, initial_w, max_iters, gamma, stoch = False):
 
     """Gradient descent algorithm."""
     # Define parameters to store w and loss
@@ -151,9 +144,6 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
         if start_index != end_index:
             yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
 
-def compute_stoch_gradient(y, tx, w):
-
-    return (-1/(tx.shape[0]))*(np.transpose(tx).dot(y-tx.dot(w)))
 
 def least_squares_SGD(y, tx, initial_w, batch_size,  max_iters, gamma):
     """Stochastic gradient descent algorithm."""
@@ -177,8 +167,8 @@ def least_squares_SGD(y, tx, initial_w, batch_size,  max_iters, gamma):
         
         ws.append(w)
         losses.append(loss)
-        """"print("Gradient Descent({bi}/{ti}): loss={l}".format(
-            bi=n, ti=max_iters, l=loss, w0=w[0], w1=w[1]))"""
+        '''print("Stochastic Gradient Descent({bi}/{ti}): loss={l}".format(
+            bi=n, ti=max_iters, l=loss, w0=w[0], w1=w[1]))'''
 
     return w, loss
 
@@ -200,7 +190,7 @@ def ridge_regression(y, tx, lambda_):
 
     w = np.linalg.solve(tx.T.dot(tx) + penalty, tx.T.dot(y))
     
-    loss = compute_loss(y, tx, w)+lambda_*np.linalg.norm(w)**2
+    loss = compute_loss(y, tx, w) #+lambda_*np.linalg.norm(w)**2
 
     return w,loss
 
@@ -260,12 +250,15 @@ def reg_logistic_regression(y, tx, lambda_ , initial_w, max_iters, gamma):
 
 #############################################################################
 
-def find_g(y,tX, w_ini, inter):
+def find_g(y,tX, w_ini, inter, stoch = False):
     losses = []
     gammas = []
     ran = inter[0]-inter[1]
-    for g in np.linspace(inter[0],inter[1], 20):
-        weight, loss = least_squares_GD(y,tX,w_ini, 2,g)
+    for g in np.linspace(inter[0],inter[1], 10):
+        if stoch == False:
+            weight, loss = least_squares_GD(y,tX,w_ini, 2,g)
+        if stoch == True:
+            weight, loss = least_squares_SGD(y,tX, w_ini,1, 2, g)
         losses.append(loss)
         gammas.append(g)
     #ran = ran/10
@@ -274,7 +267,10 @@ def find_g(y,tX, w_ini, inter):
         #print(inter)
     ind = losses.index(min(losses))
     gamma = gammas[ind]
+
     return gamma
+
+
 
 ###################### FEATURE FIX ###########################################
 def replace_aberrant_values(tX):

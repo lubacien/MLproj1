@@ -4,6 +4,14 @@ from proj1_helpers import *
 from implementations import *
 
 
+def build_poly(x, degree):
+    """polynomial basis functions for input data x, for j=0 up to j=degree."""
+    poly = np.ones((len(x), 1))
+    for deg in range(1, degree + 1):
+        poly = np.c_[poly, np.power(x, deg)]
+    return poly
+
+
 def jet(x):
     """
     Returns value corresponding to the 23 columns ( jet value
@@ -16,6 +24,32 @@ def jet(x):
         }
     
     return jet_set
+
+def kill_correlation(tx,thresh):
+    correlationmat = np.corrcoef(tx,y=None,rowvar=False)
+    ind=[]
+    for i in range(tx.shape[1]):
+        for j in range(i):
+            if correlationmat[i,j]>=thresh:
+                ind.append(j)
+
+    tx= np.delete(tx,ind, axis=1)
+
+    return tx
+
+def predict_merge(tX_test, weights, y_pred, indices):
+    
+    y_pred[indices] = predict_labels(weights, tX_test)
+    
+    return y_pred
+
+def preprocess_data(tX):
+    tX = remove_features(tX)
+    tX = replace_aberrant_values(tX)
+    tX= kill_correlation(tX,0.95)
+    tX,mean,std = standardize(tX)
+    
+    return(tX)
 
 def remove_features(tX):
     """ Deletes columns that are entirely filled with aberrant values"""
@@ -42,46 +76,17 @@ def replace_aberrant_values(tX):
     
     return tX_repl_feat
 
-def preprocess_data(tX):
-    
-    tX = remove_features(tX)
-    #print(tX)
-    tX = replace_aberrant_values(tX)
-    #print(tX)
-    tX= kill_correlation(tX,0.95)
-    
-    tX,mean,std = standardize(tX)
-    
-    return(tX)
 
-def predict_merge(tX_test, weights, y_pred, indices):
-    
-    y_pred[indices] = predict_labels(weights, tX_test)
-    print(y_pred)
-    
-    return y_pred
+def standardize(x):
+    """Standardize the original data set."""
+    mean_x = np.mean(x,axis=0)
+    x = x - mean_x
 
-def build_poly(x, degree):
-    """polynomial basis functions for input data x, for j=0 up to j=degree."""
-    poly = np.ones((len(x), 1))
-    for deg in range(1, degree + 1):
-        poly = np.c_[poly, np.power(x, deg)]
-    return poly
+    std_x = np.std(x,axis=0)
+    x = x / std_x
+    return x, mean_x, std_x
 
-
-
-def kill_correlation(tx,thresh):
-    correlationmat = np.corrcoef(tx,y=None,rowvar=False)
-    ind=[]
-    for i in range(tx.shape[1]):
-        for j in range(i):
-            if correlationmat[i,j]>=thresh:
-                ind.append(j)
-
-    tx= np.delete(tx,ind, axis=1)
-
-    return tx
-
+'''
 
 def jet(x):
     """
@@ -199,3 +204,4 @@ def standardizetest(x,trainingmean,trainingdev):
     std_data = centered_data / trainingdev
 
     return std_data
+'''

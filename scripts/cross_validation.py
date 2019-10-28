@@ -67,12 +67,12 @@ def cross_validation_for_leastsquares(y,tX,degree):
         acc.append(accuracy(ytest, xtestpol, w))
         weights_.append(w)
 
-    print("test error =", np.mean(testlosses))
-    print("train error =", np.mean(trainlosses))
-    print("accuracy = ", np.mean(acc), np.std(acc))
-    return acc, np.mean(testlosses), trainlosses, np.mean(weights_,axis=0)
+    print("test error:", np.mean(testlosses))
+    print("train error:", np.mean(trainlosses))
+    print("accuracy:", np.mean(acc))
+    return np.mean(acc), np.mean(testlosses), np.mean(trainlosses), np.mean(weights_,axis=0)
     
-def cross_validation_for_GD(y,tX,degree):
+def cross_validation_for_GD(y,tX,degree, stoch = False):
     weights_ = []
     trainlosses = []
     testlosses = []
@@ -97,8 +97,14 @@ def cross_validation_for_GD(y,tX,degree):
         xtrain = build_poly(xtrain, degree)
 
         initial_w=np.zeros(xtrain.shape[1])
-        gamma= find_g(ytrain,xtrain, initial_w, [1e-7,1e-6])
-        w, mse= least_squares_GD(ytrain, xtrain, initial_w, max_iters, gamma)
+        if stoch == False:
+            gamma= find_g(ytrain,xtrain, initial_w, [1e-7,1e-6])
+            w, mse= least_squares_GD(ytrain, xtrain, initial_w, max_iters, gamma)
+            
+        if stoch == True:
+            
+            gamma=find_g(ytrain,xtrain,initial_w,[1e-6,1e-7], stoch = True)
+            w, mse = least_squares_SGD(ytrain, xtrain, initial_w, 1, max_iters, gamma)
 
         loss_tr = mse
         loss_te = compute_mse(ytest, xtest, w)
@@ -108,10 +114,10 @@ def cross_validation_for_GD(y,tX,degree):
         acc.append(accuracy(ytest, xtest, w))
         weights_.append(w)
 
-    print("test error =", np.mean(testlosses))
-    print("train error =", np.mean(trainlosses))
-    print("accuracy = ", np.mean(acc), np.std(acc))
-    return acc, np.mean(testlosses), trainlosses, np.mean(weights_,axis=0)
+    print("test error:", np.mean(testlosses))
+    print("train error:", np.mean(trainlosses))
+    print("accuracy:", np.mean(acc))
+    return np.mean(acc), np.mean(testlosses), np.mean(trainlosses), np.mean(weights_,axis=0)
     
 def cross_validation_ridge(y, tX, lambda_, degree):
     weights_ = []
@@ -146,8 +152,12 @@ def cross_validation_ridge(y, tX, lambda_, degree):
         
         acc.append(accuracy(ytest,xtestpol,w))
         weights_.append(w)
-
-    return acc, np.mean(testlosses),trainlosses, np.mean(weights_,axis=0)
+        
+    print("test error:", np.mean(testlosses))
+    print("train error:", np.mean(trainlosses))
+    print("accuracy:", np.mean(acc))
+    
+    return np.mean(acc), np.mean(testlosses), np.mean(trainlosses), np.mean(weights_,axis=0)
 
 def cross_validation_for_logistic(y, tX, degree):
     weights_ = []
@@ -184,10 +194,10 @@ def cross_validation_for_logistic(y, tX, degree):
         acc.append(accuracy(ytest, xtest, w))
         weights_.append(w)
 
-    print("test error =", np.mean(testlosses))
-    print("train error =", np.mean(trainlosses))
-    print("accuracy = ", np.mean(acc), np.std(acc))
-    return acc, np.mean(testlosses), trainlosses, np.mean(weights_, axis=0)
+    print("test error:", np.mean(testlosses))
+    print("train error:", np.mean(trainlosses))
+    print("accuracy:", np.mean(acc))
+    return np.mean(acc), np.mean(testlosses), np.mean(trainlosses), np.mean(weights_,axis=0)
 
 def cross_validation_for_reglogistic(y, tX,lambda_, degree):
     weights_ = []
@@ -224,7 +234,9 @@ def cross_validation_for_reglogistic(y, tX,lambda_, degree):
         acc.append(accuracy(ytest, xtest, w))
         weights_.append(w)
 
-    print("test error =", np.mean(testlosses))
-    print("train error =", np.mean(trainlosses))
-    print("accuracy = ", np.mean(acc), np.std(acc))
-    return acc, np.mean(testlosses), trainlosses, np.mean(weights_, axis=0)
+    '''
+    print("test error:", np.mean(testlosses))
+    print("train error:", np.mean(trainlosses))
+    print("accuracy:", np.mean(acc))
+    '''
+    return np.mean(acc), np.mean(testlosses), np.mean(trainlosses), np.mean(weights_,axis=0)

@@ -25,9 +25,9 @@ for i in range(len(jet_set)):
     y_sets.append(y[jet_set[i]])
 
 weights=[]
-lams=np.logspace(-6,-2, 5)
+lams=np.logspace(-6,0, 20)
 
-degs = np.arange(9,13)
+degs = np.arange(7,13)
 losses=[]
 
 values1 = {}
@@ -40,7 +40,7 @@ for lam in lams:
         testlosses = []
         for data_set,y_set,val in zip(data_sets, y_sets,vals):
             accuracy, testloss,trainloss, w = cross_validation_ridge(y_set,data_set,lam,deg)
-            print("testloss={tl}, trainloss={tr}".format(tl =testloss, tr = trainloss))
+            #print("testloss={tl}, trainloss={tr}".format(tl =testloss, tr = trainloss))
             val[accuracy] = [lam, deg]
 
 matrix=np.asarray(losses).reshape(-1,3)
